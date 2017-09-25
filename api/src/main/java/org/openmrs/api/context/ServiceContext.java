@@ -19,6 +19,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.aopalliance.aop.Advice;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.CohortService;
@@ -30,24 +32,24 @@ import org.openmrs.api.LocationService;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.api.OrderService;
-import org.openmrs.api.OrderSetService;
 import org.openmrs.api.PatientService;
+import org.openmrs.api.PatientSetService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.ProviderService;
 import org.openmrs.api.SerializationService;
 import org.openmrs.api.UserService;
 import org.openmrs.api.VisitService;
+import org.openmrs.arden.ArdenService;
 import org.openmrs.hl7.HL7Service;
 import org.openmrs.logic.LogicService;
 import org.openmrs.messagesource.MessageSourceService;
-import org.openmrs.messagesource.impl.DefaultMessageSourceServiceImpl;
 import org.openmrs.notification.AlertService;
 import org.openmrs.notification.MessageService;
+import org.openmrs.notification.NoteService;
+import org.openmrs.notification.SentMessageService;
 import org.openmrs.scheduler.SchedulerService;
 import org.openmrs.util.OpenmrsClassLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
@@ -71,7 +73,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ServiceContext implements ApplicationContextAware {
 	
-	private static final Logger log = LoggerFactory.getLogger(ServiceContext.class);
+	private static final Log log = LogFactory.getLog(ServiceContext.class);
 
 	private ApplicationContext applicationContext;
 	
@@ -86,12 +88,15 @@ public class ServiceContext implements ApplicationContextAware {
 	private boolean useSystemClassLoader = false;
 	
 	// Cached service objects
+	@SuppressWarnings("unchecked")
 	Map<Class, Object> services = new HashMap<Class, Object>();
 	
 	// Advisors added to services by this service
+	@SuppressWarnings("unchecked")
 	Map<Class, Set<Advisor>> addedAdvisors = new HashMap<Class, Set<Advisor>>();
 	
 	// Advice added to services by this service
+	@SuppressWarnings("unchecked")
 	Map<Class, Set<Advice>> addedAdvice = new HashMap<Class, Set<Advice>>();
 	
 	/**
@@ -100,6 +105,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 *
 	 * @since 1.9
 	 */
+	@SuppressWarnings("unchecked")
 	Map<String, OpenmrsService> moduleOpenmrsServices = new HashMap<String, OpenmrsService>();
 	
 	/**
@@ -202,6 +208,20 @@ public class ServiceContext implements ApplicationContextAware {
 	}
 	
 	/**
+	 * @return note service
+	 */
+	public NoteService getNoteService() {
+		return getService(NoteService.class);
+	}
+	
+	/**
+	 * @return patientset-related services
+	 */
+	public PatientSetService getPatientSetService() {
+		return getService(PatientSetService.class);
+	}
+	
+	/**
 	 * @return cohort related service
 	 */
 	public CohortService getCohortService() {
@@ -216,10 +236,17 @@ public class ServiceContext implements ApplicationContextAware {
 	}
 	
 	/**
-	 * @return order set service
+	 * @return sent message related service
 	 */
-	public OrderSetService getOrderSetService() {
-		return getService(OrderSetService.class);
+	public SentMessageService getSentMessageService() {
+		return getService(SentMessageService.class);
+	}
+	
+	/**
+	 * @param sent message related service
+	 */
+	public void setSentMessageService(SentMessageService sentMessageService) {
+		setService(SentMessageService.class, sentMessageService);
 	}
 	
 	/**
@@ -256,7 +283,14 @@ public class ServiceContext implements ApplicationContextAware {
 	public ProgramWorkflowService getProgramWorkflowService() {
 		return getService(ProgramWorkflowService.class);
 	}
-
+	
+	/**
+	 * @return ardenService
+	 */
+	public ArdenService getArdenService() {
+		return getService(ArdenService.class);
+	}
+	
 	/**
 	 * @return logicService
 	 */
@@ -300,7 +334,14 @@ public class ServiceContext implements ApplicationContextAware {
 	public void setProgramWorkflowService(ProgramWorkflowService programWorkflowService) {
 		setService(ProgramWorkflowService.class, programWorkflowService);
 	}
-
+	
+	/**
+	 * @param ardenService
+	 */
+	public void setArdenService(ArdenService ardenService) {
+		setService(ArdenService.class, ardenService);
+	}
+	
 	/**
 	 * @param logicService
 	 */
@@ -372,7 +413,14 @@ public class ServiceContext implements ApplicationContextAware {
 	public void setObsService(ObsService obsService) {
 		setService(ObsService.class, obsService);
 	}
-
+	
+	/**
+	 * @param noteService the noteService to set
+	 */
+	public void setNoteService(NoteService noteService) {
+		setService(NoteService.class, noteService);
+	}
+	
 	/**
 	 * @param orderService the orderService to set
 	 */
@@ -381,10 +429,10 @@ public class ServiceContext implements ApplicationContextAware {
 	}
 	
 	/**
-	 * @param orderSetService the orderSetService to set
+	 * @param patientSetService the patientSetService to set
 	 */
-	public void setOrderSetService(OrderSetService orderSetService) {
-		setService(OrderSetService.class, orderSetService);
+	public void setPatientSetService(PatientSetService patientSetService) {
+		setService(PatientSetService.class, patientSetService);
 	}
 	
 	/**
@@ -456,13 +504,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @return MessageSourceService
 	 */
 	public MessageSourceService getMessageSourceService() {
-		try {
-			return getService(MessageSourceService.class);
-		}
-		catch (APIException ex) {
-			//must be a service not found exception because of spring not being started
-			return DefaultMessageSourceServiceImpl.getInstance();
-		}
+		return getService(MessageSourceService.class);
 	}
 	
 	/**
@@ -478,6 +520,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @param cls
 	 * @param advisor
 	 */
+	@SuppressWarnings("unchecked")
 	public void addAdvisor(Class cls, Advisor advisor) {
 		Advised advisedService = (Advised) services.get(cls);
 		if (advisedService.indexOf(advisor) < 0) {
@@ -493,6 +536,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @param cls
 	 * @param advice
 	 */
+	@SuppressWarnings("unchecked")
 	public void addAdvice(Class cls, Advice advice) {
 		Advised advisedService = (Advised) services.get(cls);
 		if (advisedService.indexOf(advice) < 0) {
@@ -508,6 +552,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @param cls
 	 * @param advisor
 	 */
+	@SuppressWarnings("unchecked")
 	public void removeAdvisor(Class cls, Advisor advisor) {
 		Advised advisedService = (Advised) services.get(cls);
 		advisedService.removeAdvisor(advisor);
@@ -518,6 +563,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @param cls
 	 * @param advice
 	 */
+	@SuppressWarnings("unchecked")
 	public void removeAdvice(Class cls, Advice advice) {
 		Advised advisedService = (Advised) services.get(cls);
 		advisedService.removeAdvice(advice);
@@ -530,6 +576,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @param source the existing service
 	 * @param target the new service
 	 */
+	@SuppressWarnings("unchecked")
 	private void moveAddedAOP(Advised source, Advised target) {
 		Class serviceClass = source.getClass();
 		Set<Advisor> existingAdvisors = getAddedAdvisors(serviceClass);
@@ -550,6 +597,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 *
 	 * @param cls the class of the cached service to cleanup
 	 */
+	@SuppressWarnings("unchecked")
 	private void removeAddedAOP(Class cls) {
 		removeAddedAdvisors(cls);
 		removeAddedAdvice(cls);
@@ -560,6 +608,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 *
 	 * @param cls the class of the cached service to cleanup
 	 */
+	@SuppressWarnings("unchecked")
 	private void removeAddedAdvisors(Class cls) {
 		Advised advisedService = (Advised) services.get(cls);
 		Set<Advisor> advisorsToRemove = addedAdvisors.get(cls);
@@ -587,6 +636,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 *
 	 * @param cls the class of the caches service to cleanup
 	 */
+	@SuppressWarnings("unchecked")
 	private void removeAddedAdvice(Class cls) {
 		Advised advisedService = (Advised) services.get(cls);
 		Set<Advice> adviceToRemove = addedAdvice.get(cls);
@@ -657,6 +707,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 * @param cls Interface to proxy
 	 * @param classInstance the actual instance of the <code>cls</code> interface
 	 */
+	@SuppressWarnings("unchecked")
 	public void setService(Class cls, Object classInstance) {
 		
 		log.debug("Setting service: " + cls);
@@ -708,6 +759,7 @@ public class ServiceContext implements ApplicationContextAware {
 	 *
 	 * @param params list of parameters
 	 */
+	@SuppressWarnings("unchecked")
 	public void setModuleService(List<Object> params) {
 		String classString = (String) params.get(0);
 		Object classInstance = params.get(1);
@@ -891,7 +943,6 @@ public class ServiceContext implements ApplicationContextAware {
 	/**
 	 * @param applicationContext the applicationContext to set
 	 */
-	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
