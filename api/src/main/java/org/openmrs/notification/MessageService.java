@@ -9,82 +9,52 @@
  */
 package org.openmrs.notification;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import org.openmrs.Role;
-import org.openmrs.User;
+import org.openmrs.api.APIException;
+import org.openmrs.api.OpenmrsService;
+import org.openmrs.notification.db.SentMessageDAO;
 
-public interface MessageService {
-	
-	// Set dependencies for message services
-	// TODO Should these be required or do we let the implementations constructor dictate the dependencies?
-	public void setMessageSender(MessageSender sender);
-	
-	public MessageSender getMessageSender();
-	
-	public void setMessagePreparator(MessagePreparator preparator);
-	
-	public MessagePreparator getMessagePreparator();
-	
-	/* Send Message Methods */
-
-	/**
-	 * TODO Auto generated method comment
-	 * 
-	 * @param message
-	 * @throws MessageException
-	 * @should send message
-	 */
-	public void sendMessage(Message message) throws MessageException;
-	
-	//sends message to everyone of a certain role
-	public void sendMessage(Message message, String roleName) throws MessageException;
-	
-	//sends message to user with the given id
-	public void sendMessage(Message message, Integer userId) throws MessageException;
-	
-	//sends message to user
-	public void sendMessage(Message message, User user) throws MessageException;
-	
-	//sends message to all users with a given role
-	public void sendMessage(Message message, Role role) throws MessageException;
-	
-	//sends message to a collection of users
-	public void sendMessage(Message message, Collection<User> users) throws MessageException;
-	
-	public void sendMessage(String recipients, String sender, String subject, String message) throws MessageException;
-	
-	// Prepare message methods
-	public Message createMessage(String subject, String message) throws MessageException;
-	
-	public Message createMessage(String sender, String subject, String message) throws MessageException;
+public interface SentMessageService extends OpenmrsService {
 	
 	/**
-	 * TODO Auto generated method comment
+	 * Used by Spring to set the specific/chosen database access implementation
 	 * 
-	 * @param recipients
-	 * @param sender
-	 * @param subject
-	 * @param message
-	 * @return Message the message that was created
-	 * @throws MessageException
-	 * @should create message
+	 * @param dao The dao implementation to use
 	 */
-	public Message createMessage(String recipients, String sender, String subject, String message) throws MessageException;
+	public void setSentMessageDAO(SentMessageDAO dao);
 	
-	public Message createMessage(String recipients, String sender, String subject, String message, String attachment,
-	        String attachmentContentType, String attachmentFileName) throws MessageException;
+	/**
+	 * Save the given <code>sentMessage</code> in the database
+	 * 
+	 * @param sentMessage the SentMessage object to save
+	 * @return The saved sentMessage object
+	 * @throws APIException
+	 */
+	public SentMessage saveSentMessage(SentMessage sentMessage) throws APIException;
 	
-	public Message prepareMessage(String templateName, Map data) throws MessageException;
+	/**
+	 * Get sentMessage by internal identifier
+	 * 
+	 * @param sentMessageId internal sentMessage identifier
+	 * @return sentMessage with given internal identifier
+	 * @throws APIException
+	 */
+	public SentMessage getSentMessage(Integer sentMessageId) throws APIException;
 	
-	public Message prepareMessage(Template template) throws MessageException;
+	/**
+	 * Completely delete the given sentMessage from the database
+	 * 
+	 * @param sentMessage the SentMessage to purge/delete
+	 * @throws APIException
+	 */
+	public void purgeSentMessage(SentMessage sentMessage) throws APIException;
 	
-	// Template methods
-	public List getAllTemplates() throws MessageException;
-	
-	public Template getTemplate(Integer id) throws MessageException;
-	
-	public List getTemplatesByName(String name) throws MessageException;
+	/**
+	 * Get all sentMessages for all users
+	 * 
+	 * @return list of sentMessages
+	 * @throws APIException
+	 */
+	public List<SentMessage> getAllSentMessages() throws APIException;
 }
