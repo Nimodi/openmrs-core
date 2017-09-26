@@ -1,83 +1,87 @@
-/**
- * This Source Code Form is subject to the terms of the Mozilla Public License,
- * v. 2.0. If a copy of the MPL was not distributed with this file, You can
- * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
- * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
- *
- * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
- * graphic logo is a trademark of OpenMRS Inc.
- */
-package org.openmrs.api.context;
 
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Future;
+		/**
+		 * This Source Code Form is subject to the terms of the Mozilla Public License,
+		 * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+		 * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+		 * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+		 *
+		 * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+		 * graphic logo is a trademark of OpenMRS Inc.
+		 */
+		package org.openmrs.api.context;
 
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
+		import java.text.SimpleDateFormat;
+		import java.util.Arrays;
+		import java.util.HashMap;
+		import java.util.HashSet;
+		import java.util.List;
+		import java.util.Locale;
+		import java.util.Map;
+		import java.util.Properties;
+		import java.util.Set;
+		import java.util.concurrent.Future;
 
-import org.aopalliance.aop.Advice;
-import org.apache.commons.lang.StringUtils;
-import org.openmrs.Allergen;
-import org.openmrs.GlobalProperty;
-import org.openmrs.PersonName;
-import org.openmrs.Privilege;
-import org.openmrs.Role;
-import org.openmrs.User;
-import org.openmrs.api.APIException;
-import org.openmrs.api.AdministrationService;
-import org.openmrs.api.CohortService;
-import org.openmrs.api.ConceptService;
-import org.openmrs.api.DatatypeService;
-import org.openmrs.api.EncounterService;
-import org.openmrs.api.FormService;
-import org.openmrs.api.LocationService;
-import org.openmrs.api.ObsService;
-import org.openmrs.api.OpenmrsService;
-import org.openmrs.api.OrderService;
-import org.openmrs.api.OrderSetService;
-import org.openmrs.api.PatientService;
-import org.openmrs.api.PersonService;
-import org.openmrs.api.ProgramWorkflowService;
-import org.openmrs.api.ProviderService;
-import org.openmrs.api.SerializationService;
-import org.openmrs.api.UserService;
-import org.openmrs.api.VisitService;
-import org.openmrs.api.db.ContextDAO;
-import org.openmrs.hl7.HL7Service;
-import org.openmrs.logic.LogicService;
-import org.openmrs.messagesource.MessageSourceService;
-import org.openmrs.module.ModuleMustStartException;
-import org.openmrs.module.ModuleUtil;
-import org.openmrs.notification.AlertService;
-import org.openmrs.notification.MessageException;
-import org.openmrs.notification.MessagePreparator;
-import org.openmrs.notification.MessageSender;
-import org.openmrs.notification.MessageService;
-import org.openmrs.notification.mail.MailMessageSender;
-import org.openmrs.notification.mail.velocity.VelocityMessagePreparator;
-import org.openmrs.scheduler.SchedulerService;
-import org.openmrs.scheduler.SchedulerUtil;
-import org.openmrs.util.DatabaseUpdateException;
-import org.openmrs.util.DatabaseUpdater;
-import org.openmrs.util.InputRequiredException;
-import org.openmrs.util.LocaleUtility;
-import org.openmrs.util.OpenmrsClassLoader;
-import org.openmrs.util.OpenmrsConstants;
-import org.openmrs.util.OpenmrsUtil;
-import org.openmrs.util.PrivilegeConstants;
-import org.openmrs.validator.ValidateUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.Advisor;
+		import javax.mail.Authenticator;
+		import javax.mail.PasswordAuthentication;
+		import javax.mail.Session;
+
+		import org.aopalliance.aop.Advice;
+		import org.apache.commons.lang.StringUtils;
+		import org.apache.commons.logging.Log;
+		import org.apache.commons.logging.LogFactory;
+		import org.openmrs.Allergen;
+		import org.openmrs.GlobalProperty;
+		import org.openmrs.PersonName;
+		import org.openmrs.Privilege;
+		import org.openmrs.Role;
+		import org.openmrs.User;
+		import org.openmrs.api.APIException;
+		import org.openmrs.api.AdministrationService;
+		import org.openmrs.api.CohortService;
+		import org.openmrs.api.ConceptService;
+		import org.openmrs.api.DatatypeService;
+		import org.openmrs.api.EncounterService;
+		import org.openmrs.api.FormService;
+		import org.openmrs.api.LocationService;
+		import org.openmrs.api.ObsService;
+		import org.openmrs.api.OpenmrsService;
+		import org.openmrs.api.OrderService;
+		import org.openmrs.api.OrderSetService;
+		import org.openmrs.api.PatientService;
+		import org.openmrs.api.PatientSetService;
+		import org.openmrs.api.PersonService;
+		import org.openmrs.api.ProgramWorkflowService;
+		import org.openmrs.api.ProviderService;
+		import org.openmrs.api.SerializationService;
+		import org.openmrs.api.UserService;
+		import org.openmrs.api.VisitService;
+		import org.openmrs.api.db.ContextDAO;
+		import org.openmrs.hl7.HL7Service;
+		import org.openmrs.logic.LogicService;
+		import org.openmrs.messagesource.MessageSourceService;
+		import org.openmrs.module.ModuleMustStartException;
+		import org.openmrs.module.ModuleUtil;
+		import org.openmrs.notification.AlertService;
+		import org.openmrs.notification.MessageException;
+		import org.openmrs.notification.MessagePreparator;
+		import org.openmrs.notification.MessageSender;
+		import org.openmrs.notification.MessageService;
+		import org.openmrs.notification.NoteService;
+		import org.openmrs.notification.SentMessageService;
+		import org.openmrs.notification.mail.MailMessageSender;
+		import org.openmrs.notification.mail.velocity.VelocityMessagePreparator;
+		import org.openmrs.scheduler.SchedulerService;
+		import org.openmrs.scheduler.SchedulerUtil;
+		import org.openmrs.util.DatabaseUpdateException;
+		import org.openmrs.util.DatabaseUpdater;
+		import org.openmrs.util.InputRequiredException;
+		import org.openmrs.util.LocaleUtility;
+		import org.openmrs.util.OpenmrsClassLoader;
+		import org.openmrs.util.OpenmrsConstants;
+		import org.openmrs.util.OpenmrsUtil;
+		import org.openmrs.util.PrivilegeConstants;
+		import org.openmrs.validator.ValidateUtil;
+		import org.springframework.aop.Advisor;
 
 /**
  * Represents an OpenMRS <code>Context</code>, which may be used to authenticate to the database and
@@ -85,11 +89,11 @@ import org.springframework.aop.Advisor;
  * <br>
  * The Context is split into a {@link UserContext} and {@link ServiceContext}. The UserContext is
  * lightweight and there is an instance for every user logged into the system. The ServiceContext is
- * heavier and it contains each service class. This is more static and there is only one ServiceContext
+ * heavier and contains each service class. This is more static and there is only one ServiceContext
  * per OpenMRS instance. <br>
  * <br>
  * Both the {@link UserContext} and the {@link ServiceContext} should not be used directly. This
- * context class has methods to pass through to the currently defined UserContext for the thread and
+ * Context class has methods to pass through to the currently defined UserContext for the thread and
  * the currently defined ServiceContext. <br>
  * <br>
  * To use the OpenMRS api there are four things that have to be done:
@@ -127,7 +131,7 @@ import org.springframework.aop.Advisor;
  */
 public class Context {
 
-	private static final Logger log = LoggerFactory.getLogger(Context.class);
+	private static final Log log = LogFactory.getLog(Context.class);
 
 	// Global resources
 	private static ContextDAO contextDAO;
@@ -221,7 +225,7 @@ public class Context {
 	 * same time.
 	 *
 	 * @return The current UserContext for this thread.
-	 * @should fail if session hasn't been opened
+	 * @should fail if session hasnt been opened
 	 */
 	public static UserContext getUserContext() {
 		Object[] arr = userContextHolder.get();
@@ -233,7 +237,7 @@ public class Context {
 		if (arr == null) {
 			log.trace("userContext is null.");
 			throw new APIException(
-			        "A user context must first be passed to setUserContext()...use Context.openSession() (and closeSession() to prevent memory leaks!) before using the API");
+					"A user context must first be passed to setUserContext()...use Context.openSession() (and closeSession() to prevent memory leaks!) before using the API");
 		}
 		return (UserContext) userContextHolder.get()[0];
 	}
@@ -397,6 +401,13 @@ public class Context {
 	}
 
 	/**
+	 * @return note service
+	 */
+	public static NoteService getNoteService() {
+		return getServiceContext().getNoteService();
+	}
+
+	/**
 	 * @return patient-related services
 	 */
 	public static PatientService getPatientService() {
@@ -419,6 +430,13 @@ public class Context {
 	 */
 	public static HL7Service getHL7Service() {
 		return getServiceContext().getHL7Service();
+	}
+
+	/**
+	 * @return patientset-related services
+	 */
+	public static PatientSetService getPatientSetService() {
+		return getServiceContext().getPatientSetService();
 	}
 
 	/**
@@ -450,6 +468,12 @@ public class Context {
 		return getServiceContext().getFormService();
 	}
 
+	/**
+	 * @return sent message service
+	 */
+	public static SentMessageService getSentMessageService() {
+		return getServiceContext().getSentMessageService();
+	}
 	/**
 	 * @return serialization service
 	 * @since 1.5
@@ -530,7 +554,7 @@ public class Context {
 	 *
 	 * @return a java mail session
 	 */
-	private static Session getMailSession() {
+	private static javax.mail.Session getMailSession() {
 		if (mailSession == null) {
 			AdministrationService adminService = getAdministrationService();
 
@@ -547,7 +571,7 @@ public class Context {
 				@Override
 				public PasswordAuthentication getPasswordAuthentication() {
 					return new PasswordAuthentication(getAdministrationService().getGlobalProperty("mail.user"),
-					        getAdministrationService().getGlobalProperty("mail.password"));
+							getAdministrationService().getGlobalProperty("mail.password"));
 				}
 			};
 
@@ -602,7 +626,7 @@ public class Context {
 	 * logs out the "active" (authenticated) user within context
 	 *
 	 * @see #authenticate
-	 * @should not fail if session hasn't been opened yet
+	 * @should not fail if session hasnt been opened yet
 	 */
 	public static void logout() {
 		if (!isSessionOpen()) {
@@ -653,7 +677,7 @@ public class Context {
 			String errorMessage = null;
 			if (StringUtils.isNotBlank(privilege)) {
 				errorMessage = Context.getMessageSourceService().getMessage("error.privilegesRequired",
-				    new Object[] { privilege }, null);
+						new Object[] { privilege }, null);
 			} else {
 				//Should we even be here if the privilege is blank?
 				errorMessage = Context.getMessageSourceService().getMessage("error.privilegesRequiredNoArgs");
@@ -687,7 +711,7 @@ public class Context {
 	/**
 	 * Convenience method. Passes through to {@link UserContext#getLocale()}
 	 *
-	 * @should not fail if session hasn't been opened
+	 * @should not fail if session hasnt been opened
 	 */
 	public static Locale getLocale() {
 		// if a session hasn't been opened, just fetch the default
@@ -739,7 +763,8 @@ public class Context {
 	 */
 	public static void closeSessionWithCurrentUser() {
 		getContextDAO().closeSession();
-    }
+		;
+	}
 
 	/**
 	 * Clears cached changes made so far during this unit of work without writing them to the
@@ -774,16 +799,6 @@ public class Context {
 	}
 
 	/**
-	 * Used to re-read the state of the given instance from the underlying database.
-	 * @since 2.0
-	 * @param obj The object to refresh from the database in the session
-	 */
-	public static void refreshEntity(Object obj) {
-		log.trace("refreshing object: "+obj);
-		getContextDAO().refreshEntity(obj);
-	}
-
-	/**
 	 * Used to clear a cached object out of a session in the middle of a unit of work. Future
 	 * updates to this object will not be saved. Future gets of this object will not fetch this
 	 * cached copy
@@ -807,8 +822,8 @@ public class Context {
 	 * @see InputRequiredException#getRequiredInput() InputRequiredException#getRequiredInput() for
 	 *      the required question/datatypes
 	 */
-	public synchronized static void startup(Properties props) throws DatabaseUpdateException, InputRequiredException,
-	        ModuleMustStartException {
+	public static void startup(Properties props) throws DatabaseUpdateException, InputRequiredException,
+			ModuleMustStartException {
 		// do any context database specific startup
 		getContextDAO().startup(props);
 
@@ -820,7 +835,6 @@ public class Context {
 		OpenmrsUtil.startup(props);
 
 		openSession();
-		clearSession();
 
 		// add any privileges/roles that /must/ exist for openmrs to work
 		// correctly.
@@ -851,8 +865,8 @@ public class Context {
 	 * @see InputRequiredException#getRequiredInput() InputRequiredException#getRequiredInput() for
 	 *      the required question/datatypes
 	 */
-	public synchronized static void startup(String url, String username, String password, Properties properties)
-	        throws DatabaseUpdateException, InputRequiredException, ModuleMustStartException {
+	public static void startup(String url, String username, String password, Properties properties)
+			throws DatabaseUpdateException, InputRequiredException, ModuleMustStartException {
 		if (properties == null) {
 			properties = new Properties();
 		}
@@ -931,6 +945,7 @@ public class Context {
 	 * @param cls
 	 * @param advisor
 	 */
+	@SuppressWarnings("unchecked")
 	public static void addAdvisor(Class cls, Advisor advisor) {
 		getServiceContext().addAdvisor(cls, advisor);
 	}
@@ -943,6 +958,7 @@ public class Context {
 	 * @param cls
 	 * @param advice
 	 */
+	@SuppressWarnings("unchecked")
 	public static void addAdvice(Class cls, Advice advice) {
 		getServiceContext().addAdvice(cls, advice);
 	}
@@ -953,6 +969,7 @@ public class Context {
 	 * @param cls
 	 * @param advisor
 	 */
+	@SuppressWarnings("unchecked")
 	public static void removeAdvisor(Class cls, Advisor advisor) {
 		getServiceContext().removeAdvisor(cls, advisor);
 	}
@@ -963,6 +980,7 @@ public class Context {
 	 * @param cls
 	 * @param advice
 	 */
+	@SuppressWarnings("unchecked")
 	public static void removeAdvice(Class cls, Advice advice) {
 		getServiceContext().removeAdvice(cls, advice);
 	}
@@ -1079,10 +1097,10 @@ public class Context {
 		ValidateUtil.setDisableValidation(disableValidation);
 
 		PersonName.setFormat(Context.getAdministrationService().getGlobalProperty(
-		    OpenmrsConstants.GLOBAL_PROPERTY_LAYOUT_NAME_FORMAT));
+				OpenmrsConstants.GLOBAL_PROPERTY_LAYOUT_NAME_FORMAT));
 
 		Allergen.setOtherNonCodedConceptUuid(Context.getAdministrationService().getGlobalProperty(
-		    OpenmrsConstants.GP_ALLERGEN_OTHER_NON_CODED_UUID));
+				OpenmrsConstants.GP_ALLERGEN_OTHER_NON_CODED_UUID));
 	}
 
 	/**
@@ -1113,7 +1131,7 @@ public class Context {
 				DatabaseUpdater.executeChangelog();
 			} else {
 				throw new DatabaseUpdateException(
-				        "Database updates are required.  Call Context.updateDatabase() before .startup() to continue.");
+						"Database updates are required.  Call Context.updateDatabase() before .startup() to continue.");
 			}
 		}
 	}
