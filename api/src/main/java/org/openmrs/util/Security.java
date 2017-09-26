@@ -33,17 +33,17 @@ import org.springframework.util.StringUtils;
  * OpenMRS's security class deals with the hashing of passwords.
  */
 public class Security {
-	
+
 	/**
-	 * Defined encoding to avoid using default platform charset 
+	 * Defined encoding to avoid using default platform charset
 	 */
 	private static final String encoding = "UTF-8";
-	
+
 	/**
 	 * encryption settings
 	 */
-	public static Logger log = LoggerFactory.getLogger(Security.class);
-	
+	final Logger log = LoggerFactory.getLogger(Security.class);
+
 	/**
 	 * Compare the given hash and the given string-to-hash to see if they are equal. The
 	 * string-to-hash is usually of the form password + salt. <br>
@@ -59,16 +59,16 @@ public class Security {
 	 * @should match strings hashed with sha1 algorithm
 	 * @should match strings hashed with sha512 algorithm and 128 characters salt
 	 */
-	public static boolean hashMatches(String hashedPassword, String passwordToHash) {
+	public  boolean hashMatches(String hashedPassword, String passwordToHash) {
 		if (hashedPassword == null || passwordToHash == null) {
 			throw new APIException("password.cannot.be.null", (Object[]) null);
 		}
-		
+
 		return hashedPassword.equals(encodeString(passwordToHash))
-		        || hashedPassword.equals(encodeStringSHA1(passwordToHash))
-		        || hashedPassword.equals(incorrectlyEncodeString(passwordToHash));
+				|| hashedPassword.equals(encodeStringSHA1(passwordToHash))
+				|| hashedPassword.equals(incorrectlyEncodeString(passwordToHash));
 	}
-	
+
 	/**
 	 * Gets the error message for failing to encode password when the given algorithm was not found
 	 * @param algo algorithm used for encoding
@@ -78,9 +78,9 @@ public class Security {
 		String errorMessage = "Can't encode password because the given algorithm: " + algo + " was not found! (fail)";
 		return errorMessage;
 	}
-	
+
 	/**
-	/**
+	 /**
 	 * This method will hash <code>strToEncode</code> using the preferred algorithm. Currently,
 	 * OpenMRS's preferred algorithm is hard coded to be SHA-512.
 	 *
@@ -88,7 +88,7 @@ public class Security {
 	 * @return the SHA-512 encryption of a given string
 	 * @should encode strings to 128 characters
 	 */
-	public static String encodeString(String strToEncode) throws APIException {
+	public  String encodeString(String strToEncode) throws APIException {
 		String algorithm = "SHA-512";
 		MessageDigest md;
 		byte[] input;
@@ -106,14 +106,14 @@ public class Security {
 		}
 		return hexString(md.digest(input));
 	}
-	
+
 	/**
 	 * This method will hash <code>strToEncode</code> using the old SHA-1 algorithm.
 	 *
 	 * @param strToEncode string to encode
 	 * @return the SHA-1 encryption of a given string
 	 */
-	private static String encodeStringSHA1(String strToEncode) throws APIException {
+	private String encodeStringSHA1(String strToEncode) throws APIException {
 		String algorithm = "SHA1";
 		MessageDigest md;
 		byte[] input;
@@ -131,7 +131,7 @@ public class Security {
 		}
 		return hexString(md.digest(input));
 	}
-	
+
 	/**
 	 * Convenience method to convert a byte array to a string
 	 *
@@ -150,10 +150,10 @@ public class Security {
 			buf.append(hexChars[high]);
 			buf.append(hexChars[low]);
 		}
-		
+
 		return buf.toString();
 	}
-	
+
 	/**
 	 * This method will hash <code>strToEncode</code> using SHA-1 and the incorrect hashing method
 	 * that sometimes dropped out leading zeros.
@@ -161,7 +161,7 @@ public class Security {
 	 * @param strToEncode string to encode
 	 * @return the SHA-1 encryption of a given string
 	 */
-	private static String incorrectlyEncodeString(String strToEncode) throws APIException {
+	private  String incorrectlyEncodeString(String strToEncode) throws APIException {
 		String algorithm = "SHA1";
 		MessageDigest md;
 		byte[] input;
@@ -179,7 +179,7 @@ public class Security {
 		}
 		return incorrectHexString(md.digest(input));
 	}
-	
+
 	/**
 	 * This method used to be the simple hexString method, however, as pointed out in ticket
 	 * http://dev.openmrs.org/ticket/1178, it was not working correctly. Authenticated still needs
@@ -200,17 +200,17 @@ public class Security {
 		}
 		return new String(s);
 	}
-	
+
 	/**
 	 * This method will generate a random string
 	 *
 	 * @return a secure random token.
 	 */
-	public static String getRandomToken() throws APIException {
+	public  String getRandomToken() throws APIException {
 		Random rng = new Random();
 		return encodeString(Long.toString(System.currentTimeMillis()) + Long.toString(rng.nextLong()));
 	}
-	
+
 	/**
 	 * encrypt text to a string with specific initVector and secretKey; rarely used except in
 	 * testing and where specifically necessary
@@ -227,7 +227,7 @@ public class Security {
 		IvParameterSpec initVectorSpec = new IvParameterSpec(initVector);
 		SecretKeySpec secret = new SecretKeySpec(secretKey, OpenmrsConstants.ENCRYPTION_KEY_SPEC);
 		byte[] encrypted;
-		
+
 		try {
 			Cipher cipher = Cipher.getInstance(OpenmrsConstants.ENCRYPTION_CIPHER_CONFIGURATION);
 			cipher.init(Cipher.ENCRYPT_MODE, secret, initVectorSpec);
@@ -239,10 +239,10 @@ public class Security {
 		catch (UnsupportedEncodingException e) {
 			throw new APIException("system.cannot.find.encoding", new Object[] { encoding }, e);
 		}
-		
+
 		return Base64.encode(encrypted);
 	}
-	
+
 	/**
 	 * encrypt text using stored initVector and securityKey
 	 *
@@ -254,7 +254,7 @@ public class Security {
 	public static String encrypt(String text) {
 		return Security.encrypt(text, Security.getSavedInitVector(), Security.getSavedSecretKey());
 	}
-	
+
 	/**
 	 * decrypt text to a string with specific initVector and secretKey; rarely used except in
 	 * testing and where specifically necessary
@@ -271,7 +271,7 @@ public class Security {
 		IvParameterSpec initVectorSpec = new IvParameterSpec(initVector);
 		SecretKeySpec secret = new SecretKeySpec(secretKey, OpenmrsConstants.ENCRYPTION_KEY_SPEC);
 		String decrypted = null;
-		
+
 		try {
 			Cipher cipher = Cipher.getInstance(OpenmrsConstants.ENCRYPTION_CIPHER_CONFIGURATION);
 			cipher.init(Cipher.DECRYPT_MODE, secret, initVectorSpec);
@@ -284,10 +284,10 @@ public class Security {
 		catch (UnsupportedEncodingException e) {
 			throw new APIException("system.cannot.find.encoding", new Object[] { encoding }, e);
 		}
-		
+
 		return decrypted;
 	}
-	
+
 	/**
 	 * decrypt text using stored initVector and securityKey
 	 *
@@ -299,7 +299,7 @@ public class Security {
 	public static String decrypt(String text) {
 		return Security.decrypt(text, Security.getSavedInitVector(), Security.getSavedSecretKey());
 	}
-	
+
 	/**
 	 * retrieve the stored init vector from runtime properties
 	 *
@@ -308,15 +308,15 @@ public class Security {
 	 */
 	public static byte[] getSavedInitVector() {
 		String initVectorText = Context.getRuntimeProperties().getProperty(
-		    OpenmrsConstants.ENCRYPTION_VECTOR_RUNTIME_PROPERTY, OpenmrsConstants.ENCRYPTION_VECTOR_DEFAULT);
-		
+				OpenmrsConstants.ENCRYPTION_VECTOR_RUNTIME_PROPERTY, OpenmrsConstants.ENCRYPTION_VECTOR_DEFAULT);
+
 		if (StringUtils.hasText(initVectorText)) {
 			return Base64.decode(initVectorText);
 		}
-		
+
 		throw new APIException("no.encryption.initialization.vector.found", (Object[]) null);
 	}
-	
+
 	/**
 	 * generate a new cipher initialization vector; should only be called once in order to not
 	 * invalidate all encrypted data
@@ -328,15 +328,15 @@ public class Security {
 		// initialize the init vector with 16 random bytes
 		byte[] initVector = new byte[16];
 		new SecureRandom().nextBytes(initVector);
-		
+
 		// TODO get the following (better) method working
 		// Cipher cipher = Cipher.getInstance(CIPHER_CONFIGURATION);
 		// AlgorithmParameters params = cipher.getParameters();
 		// byte[] initVector = params.getParameterSpec(IvParameterSpec.class).getIV();
-		
+
 		return initVector;
 	}
-	
+
 	/**
 	 * retrieve the secret key from runtime properties
 	 *
@@ -345,15 +345,15 @@ public class Security {
 	 */
 	public static byte[] getSavedSecretKey() {
 		String keyText = Context.getRuntimeProperties().getProperty(OpenmrsConstants.ENCRYPTION_KEY_RUNTIME_PROPERTY,
-		    OpenmrsConstants.ENCRYPTION_KEY_DEFAULT);
-		
+				OpenmrsConstants.ENCRYPTION_KEY_DEFAULT);
+
 		if (StringUtils.hasText(keyText)) {
 			return Base64.decode(keyText);
 		}
-		
+
 		throw new APIException("no.encryption.secret.key.found", (Object[]) null);
 	}
-	
+
 	/**
 	 * generate a new secret key; should only be called once in order to not invalidate all
 	 * encrypted data
@@ -371,11 +371,11 @@ public class Security {
 			throw new APIException("could.not.generate.cipher.key", null, e);
 		}
 		kgen.init(128); // 192 and 256 bits may not be available
-		
+
 		// Generate the secret key specs.
 		SecretKey skey = kgen.generateKey();
-		
+
 		return skey.getEncoded();
 	}
-	
+
 }
